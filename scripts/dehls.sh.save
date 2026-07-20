@@ -1,0 +1,3 @@
+for x in ${*}
+rm -rf ~/atc/Keys/${1}.*
+rm -rf /var/www/atc-edu.com/html/video/${1}/hls

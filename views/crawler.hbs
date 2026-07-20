@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="author" content="Smart Node">
+  <title>{{name}}</title>
+  <meta property="og:title" content="{{name}}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="http://atc-edu.com/new{{url}}" />
+  {{#if img}}
+  <meta property="og:image" content="https://atc-edu.com/data/courses/{{img}}" />
+   <meta property="twitter:image" content="https://atc-edu.com/data/courses/{{img}}" />
+  <meta property="twitter:card" content="https://atc-edu.com/data/courses/{{img}}" />
+  {{else}}
+  <meta property="og:image" content="https://atc-edu.com/new/img/aa.png" />
+    <meta property="twitter:image" content="https://atc-edu.com/new/img/aa.png" />
+  <meta property="twitter:card" content="https://atc-edu.com/new/img/aa.png" />
+  {{/if}}
+  <meta property="og:image:width" content="300" />
+  <meta property="og:image:height" content="300" />
+  <meta property="og:site_name" content="ATC" />
+  
+  <meta property="og:description" content="{{short_descr}}" />
+  {{#if course_id}}
+  <meta property="og:video" content="https://atc-edu.com/data/courses/{{course_id}}.mp4" />
+  {{else}}
+  <meta property="og:video" content="https://atc-edu.com/new/assets/3addah.mp4" />
+  {{/if}}
+  <meta property="og:video:type" content="video/mp4" />
+  <meta property="og:video:width" content="400" />
+  <meta property="og:video:height" content="300" />
+  <meta property="twitter:title" content="{{name}}" />
+  <meta property="twitter:description" content="{{short_descr}}" />
+  <meta property="twitter:site" content="@AfricanTrainingCenter" />
+</head>
+</html>  
+  
+  
+  

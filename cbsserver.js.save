@@ -1,0 +1,203 @@
+const bcrypt = require("bcryptjs");
+const _ = require("lodash");
+const express = require("express");
+const bodyParser = require("body-parser");
+const http = require("http");
+var multiparty = require("multiparty");
+const path = require("path");
+const jwt = require("jsonwebtoken");
+var atob = require("atob");
+const handlebars = require("express-handlebars");
+const socketIO = require("socket.io");
+var { con, smart } = require("./db/db.js");
+const utils = require("./utils/utils");
+var gdp = require("./controllers/gdp");
+var about = require("./controllers/about");
+var foriegn_trade = require("./controllers/foriegn_trade");
+var pub = require("./controllers/publications");
+var slide = require("./controllers/slides");
+var news = require("./controllers/news");
+var pop = require("./controllers/populations");
+var sector = require("./controllers/sectors");
+var user = require("./controllers/user");
+var indicators = require("./controllers/indicators");
+
+const axios = require("axios");
+const uuidv1 = require("uuid/v1");
+const https = require("https");
+global.navigator = { appName: "nodejs" }; // fake the navigator object
+global.window = {}; // fake the window object
+const JSEncrypt = require("jsencrypt").default;
+var requestCountry = require("request-country");
+const exec = require("child_process").exec;
+const cors = require("cors");
+const fs = require("fs");
+var app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cors());
+
+var server = app.listen(7077, function () {
+  console.log("server started");
+});
+var io = socketIO.listen(server, { log: true, origins: "*:*" });
+io.origins("*:*");
+io.on("connection", function (socket) {
+  console.log("New user connected", socket.id);
+  socket.on("connectUser", function (user_id) {
+    console.log("hi " + user_id);
+    // setTimeout(function () {
+    utils.start_session(user_id, socket.id);
+    //  },150)
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected", socket.id);
+    utils.end_session(socket.id);
+  });
+});
+app.use(express.static("public"));
+app.set("view engine", "hbs");
+app.engine(
+  "hbs",
+  handlebars({
+    layoutsDir: __dirname + "/views",
+    extname: "hbs",
+    // defaultLayout: 'planB',
+    // partialsDir: __dirname + '/views/partials/'
+  })
+);
+
+app.use(bodyParser({ limit: "50mb" }));
+
+app.use(bodyParser.json());
+setInterval(function () {
+  console.log("Cbs");
+}, 15000);
+
+//GDP apis
+app.get("/api/getGdpTotal", gdp.getGdpTotal);
+app.get("/api/getAllStates", gdp.getAllStates);
+
+app.post("/api/addGdpDepartment", gdp.addGdpDepartment);
+app.post("/api/addGdpYear", gdp.addGdpYear);
+app.post("/api/getGdbYearMain", gdp.getGdbYearMain);
+app.post("/api/AddState", gdp.AddState);
+app.post("/api/updateState", gdp.updateState);
+app.post("/api/removeState", gdp.removeState);
+app.post("/api/removeGdbTotal", gdp.removeGdbTotal);
+app.post("/api/addNewYearGdp", gdp.addNewYearGdp);
+
+//Foriegn Trade apis
+app.get("/api/getAllForiegnTrade", foriegn_trade.getAllForiegnTrade);
+
+app.post("/api/AddForiegnTrade", foriegn_trade.AddForiegnTrade);
+app.post("/api/updateForiegnTrade", foriegn_trade.updateForiegnTrade);
+app.post("/api/removeForiegnTrade", foriegn_trade.removeForiegnTrade);
+
+app.get("/api/getAllForiengTradeYear", foriegn_trade.getAllForiengTradeYear);
+app.get("/api/getAllForiProducts", foriegn_trade.getAllForiProducts);
+app.get("/api/getAllForiProdAnnual", foriegn_trade.getAllForiProdAnnual);
+app.post("/api/AddForiengTradeYearyear", foriegn_trade.AddForiengTradeYearyear);
+app.post("/api/removeForiengTradeYear", foriegn_trade.removeForiengTradeYear);
+app.post("/api/updatedForiengTradeYear", foriegn_trade.updatedForiengTradeYear);
+app.post("/api/getForiCountriesForYear", foriegn_trade.getForiCountriesForYear);
+app.post(
+  "/api/removeForiCountriesForYear",
+  foriegn_trade.removeForiCountriesForYear
+);
+app.post(
+  "/api/updatedForiCountriesForYear",
+  foriegn_trade.updatedForiCountriesForYear
+);
+app.post("/api/AddForiProduct", foriegn_trade.AddForiProduct);
+app.post("/api/removeForiProduct", foriegn_trade.removeForiProduct);
+app.post(
+  "/api/AddForiengTradeCountries",
+  foriegn_trade.AddForiengTradeCountries
+);
+app.post("/api/updatedForiProduct", foriegn_trade.updatedForiProduct);
+app.post("/api/AddForiProdAnnual", foriegn_trade.AddForiProdAnnual);
+app.post("/api/removeForiProdAnnual", foriegn_trade.removeForiProdAnnual);
+app.post("/api/APIsupdatedForiProdAnnualid", foriegn_APIsupdatedForiProdAnnualidtrade.APIsupdatedForiProdAnnualid);
+
+// Publications appendFileSync
+
+app.get("/api/getAllPublications", pub.getAllPublications);
+
+app.post("/api/AddPublication", pub.AddPublication);
+app.post("/api/removePublication", pub.removePublication);
+app.post("/api/updatePublicationFile", pub.updatePublicationFile);
+app.post("/api/updatePublicationImg", pub.updatePublicationImg);
+app.post("/api/updatePublicationData", pub.updatePublicationData);
+
+// slides apis
+app.get("/api/getAllSlides", slide.getAllSlides);
+
+app.post("/api/AddSlide", slide.AddSlide);
+app.post("/api/updateSlide", slide.updateSlide);
+app.post("/api/removeSlide", slide.removeSlide);
+app.post("/api/ShowSlide", slide.ShowSlide);
+
+// pop apis
+app.get("/api/getyearPOP", pop.getyearPOP);
+
+app.post("/api/AddyearPOP", pop.AddyearPOP);
+app.post("/api/removeyearPOP", pop.removeyearPOP);
+app.post("/api/updateyearPOP", pop.updateyearPOP);
+app.get("/api/getAgeGroup", pop.getAgeGroup);
+
+// news apis
+app.get("/api/getAllNews", news.getAllNews);
+
+app.post("/api/AddNews", news.AddNews);
+app.post("/api/updateNews", news.updateNews);
+app.post("/api/removeNews", news.removeNews);
+app.post("/api/ShowNews", news.ShowNews);
+
+//sector apis
+
+app.get("/api/getAllSectors", sector.getAllSectors);
+app.get("/api/getAllProductSector", sector.getAllProductSector);
+// app.get("/api/addYear",sector.addYear)
+
+app.post("/api/AddSectors", sector.AddSectors);
+app.post("/api/AddProductSector", sector.AddProductSector);
+app.post("/api/AddSectorsAnnual", sector.AddSectorsAnnual);
+app.post("/api/getYearSectorsAnnual", sector.getYearSectorsAnnual);
+app.post("/api/getAllyearsforSector", sector.getAllyearsforSector);
+app.post("/api/AddproductAnnualforState", sector.AddproductAnnualforState);
+app.post("/api/getproductAnnualforState", sector.getproductAnnualforState);
+
+//about
+app.post("/api/updateOurMission", about.updateOurMission);
+app.post("/api/updateOurGoal", about.updateOurGoal);
+app.post("/api/updateOurVision", about.updateOurVision);
+app.get("/api/getOurMission", about.getOurMission);
+app.get("/api/getOurVision", about.getOurVision);
+app.get("/api/getOurGoal", about.getOurGoal);
+app.get("/api/getDepartments", about.getDepartments);
+app.post("/api/addOrganiztionChart", about.addOrganiztionChart);
+app.post("/api/updateOrganiztionChart", about.updateOrganiztionChart);
+
+// user
+app.post("/api/insertNewUser", user.insertNewUser);
+app.get("/api/getAllUsers", user.getAllUsers);
+app.post("/api/deleteUser", user.deleteUser);
+app.post("/api/editUser", user.editUser);
+
+// indicators Apis
+app.post("/api/updateCycle", indicators.updateCycle);
+app.post("/api/deleteCycle", indicators.deleteCycle);
+app.get("/api/getCycles", indicators.getCycles);
+app.post("/api/addCycle", indicators.addCycle);
+app.post("/api/deleteIndicator", indicators.deleteIndicator);
+app.post("/api/updateIndicator", indicators.updateIndicator);
+app.post("/api/addIndicator", indicators.addIndicator);
+app.post("/api/deleteIndicatorType", indicators.deleteIndicatorType);
+app.post("/api/updateIndicatorType", indicators.updateIndicatorType);
+app.post("/api/addIndicatorType", indicators.addIndicatorType);
+app.get("/api/getIndicatorTypes", indicators.getIndicatorTypes);
+
+utils.setIo(io);
+
+module.exports = { app };

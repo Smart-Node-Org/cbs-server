@@ -1,0 +1,5 @@
+ffmpeg -i /var/www/atc-edu.com/html/video/test/v1.mp4 -filter:v scale="120:-1",fps=1 thumbnail/out%d.png
+
+x=`mp4info /var/www/atc-edu.com/html/video/test/v1.mp4 | python3 ~/atc/tests/time_detector2.py`
+
+ffmpeg -i %03d.png -filter_complex scale=120:-1,tile=${x}x1 output.png
